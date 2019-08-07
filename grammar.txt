@@ -1,0 +1,19 @@
+Event Definition:
+`<event>(): {code}`
+Command Call:
+`<command> [<arguments> [...]]`
+
+Required:
+`<required>`
+Optional:
+`[optional]`
+Continued Pattern:
+`...`
+Code Body:
+`{code}`
+
+Example 1: Printing "Hello, World!":
+`
+start():
+  println "Hello, World!"
+`

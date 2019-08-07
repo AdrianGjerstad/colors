@@ -83,6 +83,9 @@ window.ColorsExecuter = (function() {
         } else if(multichar.substr(0, multichar.length-1) === "=") {
           tokens.push(["=", ""]);
           multichar = "";
+        } else if(multichar.match(/[_$]?[a-z0-9$_][\s;]/i) !== null) {
+          tokens.push(["variable", multichar.substr(0, multichar.length-1)]);
+          multichar = "";
         }
       } else if(tok === '"' || tok === "'") {
         string = false;

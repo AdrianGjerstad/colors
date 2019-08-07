@@ -48,24 +48,46 @@ window.ColorsExecuter = (function() {
 
   function interpreter(code) {
     let tokens = lex(code);
-    alert(tokens.join(":"));
+    console.log(tokens);
   }
 
   function lex(code) {
+    console.debug("lexer: lex code:\n" + code);
+    code += " ";
     let tokens = [];
 
     let multichar = "";
+    let string = false;
 
     for(let i = 0; i < code.length; ++i) {
       let tok = code[i];
       multichar += tok;
 
-      if(multichar.match(/[+-]?\d+(\.\d+)?(e[-+]?\d+)?)/i).length === 1) {
-        if(multichar.match(/[+-]?\d+(\.\d+)?(e[-+]?\d+)?/i)[0].length ===
-            multichar.length-1) {
-          tokens.push(["number", multichar.substr(0, multichar.length-1)]);
+      if(!string) {
+        if(multichar.match(/[+-]?\d+(\.\d+)?(e[-+]?\d+)?/i) !== null) {
+          if(multichar.match(/[+-]?\d+(\.\d+)?(e[-+]?\d+)?/i)[0].length ===
+              multichar.length-1) {
+            tokens.push(["number", multichar.substr(0, multichar.length-1)]);
+            multichar = "";
+          }
+        } else if(multichar.substr(0, multichar.length-1) === "true") {
+          tokens.push(["boolean", "true"]);
+          multichar = "";
+        } else if(multichar.substr(0, multichar.length-1) === "false") {
+          tokens.push(["boolean", "false"]);
+          multichar = "";
+        } else if(multichar.substr(0, multichar.length-1) === '"' ||
+                  multichar.substr(0, multichar.length-1) === "'") {
+          string = true;
+          multichar = multichar[1];
+        } else if(multichar.substr(0, multichar.length-1) === "=") {
+          tokens.push(["=", ""]);
           multichar = "";
         }
+      } else if(tok === '"' || tok === "'") {
+        string = false;
+        tokens.push(["string", multichar.substr(0, multichar.length-1)]);
+        multichar = "";
       }
     }
 

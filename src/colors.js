@@ -46,6 +46,52 @@ window.ColorsExecuter = (function() {
     alert(msg + " @" + url + ":" + line + ":" + col);
   };
 
+  let commands = [
+    "println",
+    "print",
+    "warnln",
+    "warn",
+    "errorln",
+    "error",
+    "debugln",
+    "debug",
+    "incahr",
+    "inchars",
+    "inline",
+    "concat",
+    "substr",
+    "return"
+  ];
+
+  commands.findMatch = function(key) {
+    for(let i = 0; i < this.length; ++i) {
+      if(this[i] === key) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  let events = [
+    /preload\s*\n*\s*\(\s*\n*\s*\)\s*\n*\s*:/,
+    /start\s*\n*\s*\(\s*\n*\s*\)\s*\n*\s*:/,
+    /finish\s*\n*\s*\(\s*\n*\s*\)\s*\n*\s*:/,
+    /keydown\s*\n*\s*\(\s*\n*\s*[_$]?[a-zA-Z0-9$_]+\s*\n*\s*,\s*\n*\s*[_$]?[a-zA-Z0-9$_]+\s*\n*\s*\)\s*\n*\s*:/,
+    /keyup\s*\n*\s*\(\s*\n*\s*[_$]?[a-zA-Z0-9$_]+\s*\n*\s*,\s*\n*\s*[_$]?[a-zA-Z0-9$_]+\s*\n*\s*\)\s*\n*\s*:/,
+    /keytyped\s*\n*\s*\(\s*\n*\s*[_$]?[a-zA-Z0-9$_]+\s*\n*\s*\)\s*\n*\s*:/,
+  ];
+
+  events.findMatch = function(key) {
+    for(let i = 0; i < this.length; ++i) {
+      if(key.match(this[i]) !== null) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   function interpreter(code) {
     let tokens = lex(code);
     console.log(tokens);
@@ -58,13 +104,26 @@ window.ColorsExecuter = (function() {
 
     let multichar = "";
     let string = false;
+    let comment = false;
 
     for(let i = 0; i < code.length; ++i) {
       let tok = code[i];
       multichar += tok;
 
-      if(!string) {
-        if(multichar.match(/[+-]?\d+(\.\d+)?(e[-+]?\d+)?/i) !== null) {
+      if(multichar.match(/[\s\n]/) !== null && multichar.length === 1) {
+        multichar = "";
+
+        if(tok === "\n") comment = false;
+        continue;
+      }
+
+      if(comment) multichar = "";
+
+      if(!string && !comment) {
+        if(tok === "#") {
+          comment = true;
+          multichar = "";
+        } else if(multichar.match(/[+-]?\d+(\.\d+)?(e[-+]?\d+)?/i) !== null) {
           if(multichar.match(/[+-]?\d+(\.\d+)?(e[-+]?\d+)?/i)[0].length ===
               multichar.length-1) {
             tokens.push(["number", multichar.substr(0, multichar.length-1)]);
@@ -80,14 +139,18 @@ window.ColorsExecuter = (function() {
                   multichar.substr(0, multichar.length-1) === "'") {
           string = true;
           multichar = multichar[1];
-        } else if(multichar.substr(0, multichar.length-1) === "=") {
-          tokens.push(["=", ""]);
+        } else if(events.findMatch(multichar)) {
+          tokens.push(["event", multichar.substr(0, multichar.length-1)]);
           multichar = "";
-        } else if(multichar.match(/[_$]?[a-z0-9$_][\s;]/i) !== null) {
+        } else if(commands.findMatch(multichar.substr(0, multichar.length-1))&&
+            multichar[multichar.length-1]===" ") {
+          tokens.push(["command", multichar.substr(0, multichar.length-1)]);
+          multichar = "";
+        } else if(multichar.match(/[_$]?[a-z0-9$_]+[\s\n]/i) !== null) {
           tokens.push(["variable", multichar.substr(0, multichar.length-1)]);
           multichar = "";
         }
-      } else if(tok === '"' || tok === "'") {
+      } else if(string && (tok === '"' || tok === "'")) {
         string = false;
         tokens.push(["string", multichar.substr(0, multichar.length-1)]);
         multichar = "";

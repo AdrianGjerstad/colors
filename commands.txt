@@ -1,0 +1,58 @@
+Comments:
+`
+# Comment
+`
+
+I/O:
+`
+println "foo" # Prints the string/char to the console with a newline.
+print "foo\n" # Prints the string/char to the console.
+# NOTE: '\n' added for newline purposes.
+
+warnln "warning" # Prints a warning and newline.
+warn "warning\n" # Prints a warning.
+# NOTE: '\n' added for newline purposes.
+
+errorln "error" # Prints an error and newline.
+error "error\n" # Prints an error.
+# NOTE: '\n' added for newline purposes.
+
+debugln "verbose" # Prints a debug message and newline.
+debug "verbose\n" # Prints a debug message.
+# NOTE: '\n' added for newline purposes.
+
+inchar x # Takes in one character and puts it in x.
+inline x # Starts input prompt until enter/return is pressed. Result goes in x.
+inchars 2 x # Takes in two characters and stores tham as a string in x.
+`
+
+Miscellaneous:
+`
+return x # In event, returns the value of x.
+`
+
+Events:
+`
+preload():
+  global state "start"
+
+start():
+  println "Start Event" # Called when program begins.
+
+finish():
+  println "Finish Event" # Called when program is finishing.
+  return 0 # For telling the interpreter things went smoothly.
+
+keydown(code, name):
+  concat name " Pressed"
+  println name # Called when a key is pressed. Gives key code and key name.
+
+keyup(code, name):
+  concat name " Released"
+  println name # Called when a key is released. Gives key code and key name.
+
+keytyped(value):
+  concat "You typed " value
+  concat value "!"
+  println value # Called when a key is typed. Gives input value.
+`
